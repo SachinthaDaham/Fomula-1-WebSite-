@@ -119,10 +119,15 @@ export default function Home() {
               )}
             </div>
 
-            {/* CTA */}
-            <Link href="/dashboard" className="nav-cta michroma">
-              ENTER_DASHBOARD
-            </Link>
+            {/* Auth CTAs */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <Link href="/login" className="nav-link-pro michroma" style={{ fontWeight: 700, fontSize: "0.6rem", letterSpacing: "1.5px" }}>
+                SIGN_IN
+              </Link>
+              <Link href="/register" className="nav-cta michroma">
+                REGISTER
+              </Link>
+            </div>
           </div>
         </nav>
 

@@ -234,13 +234,11 @@ const DASHBOARD_NAV_ITEMS = [
     { name: "RESULTS", tab: "intelligence&subtab=results" },
     { name: "NEWS", tab: "editorial" },
     { name: "DRIVERS", tab: "paddock&subtab=drivers", megaMenu: "drivers" },
-    { name: "TEAMS", tab: "paddock&subtab=teams", megaMenu: "teams" }
+    { name: "TEAMS", tab: "paddock&subtab=teams", megaMenu: "teams" },
+    { name: "MANAGEMENT", tab: "management", adminOnly: true }
 ];
 
-
-
-
-function Navbar({ activeTab, season, setSelectedArticle, onSeasonChange }) {
+function Navbar({ activeTab, season, setSelectedArticle, onSeasonChange, user, onLogout }) {
     const searchParams = useSearchParams();
     const [activeMegaMenu, setActiveMegaMenu] = useState(null);
 
@@ -263,6 +261,7 @@ function Navbar({ activeTab, season, setSelectedArticle, onSeasonChange }) {
                     <div className="nav-links-pro" style={{ display: 'flex', justifyContent: 'center', gap: '1.2rem' }}>
                         {DASHBOARD_NAV_ITEMS.filter(item => {
                             if (item.name === "SCHEDULE" && season !== 2026) return false;
+                            if (item.adminOnly && user?.role !== 'admin') return false;
                             return true;
                         }).map((item) => {
                             const itemTabBase = item.tab.split('&')[0];
@@ -307,7 +306,31 @@ function Navbar({ activeTab, season, setSelectedArticle, onSeasonChange }) {
                             );
                         })}
                     </div>
-                    <div className="nav-side-col right" style={{ gap: '1.5rem', flexShrink: 0 }}>
+                    <div className="nav-side-col right" style={{ gap: '1rem', flexShrink: 0 }}>
+                        {user && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginRight: '0.5rem' }}>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div className="michroma" style={{ fontSize: '0.45rem', opacity: 0.5, letterSpacing: '1px' }}>{user.role?.toUpperCase()}_IDENT</div>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '0.5px' }}>{user.name}</div>
+                                </div>
+                                <button
+                                    onClick={onLogout}
+                                    className="michroma"
+                                    style={{
+                                        background: 'rgba(225,6,0,0.1)',
+                                        border: '1px solid rgba(225,6,0,0.3)',
+                                        color: 'var(--f1-red)',
+                                        fontSize: '0.45rem',
+                                        padding: '4px 8px',
+                                        cursor: 'pointer',
+                                        borderRadius: '2px',
+                                        letterSpacing: '1px'
+                                    }}
+                                >
+                                    LOGOUT
+                                </button>
+                            </div>
+                        )}
                         <SeasonDropdown currentSeason={season} onSeasonChange={onSeasonChange} />
                     </div>
                 </div>
@@ -1078,6 +1101,30 @@ function DashboardContent() {
     const [drivers, setDrivers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentTime, setCurrentTime] = useState("");
+    const [user, setUser] = useState(null);
+
+    // Fetch User Profile
+    useEffect(() => {
+        fetch("/api/auth/me")
+            .then(res => res.json())
+            .then(res => {
+                console.log("DEBUG: User session fetched:", res);
+                if (res.success) {
+                    setUser(res.data);
+                }
+            })
+            .catch(err => console.error("Session check failed", err));
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await fetch("/api/auth/logout", { method: "POST" });
+            router.push("/login");
+            router.refresh();
+        } catch (err) {
+            console.error("Logout failed", err);
+        }
+    };
 
     useEffect(() => {
         const sTab = searchParams.get("tab");
@@ -1157,6 +1204,8 @@ function DashboardContent() {
                     setSelectedArticle(null);
                     router.push(`/dashboard?${params.toString()}`, { scroll: false });
                 }}
+                user={user}
+                onLogout={handleLogout}
             />
 
 
