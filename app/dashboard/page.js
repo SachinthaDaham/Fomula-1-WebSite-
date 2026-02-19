@@ -1083,6 +1083,249 @@ function PaddockView({ teams, drivers, paddockTab, season }) {
 
 // ─── Main Dashboard Wrapper ───────────────────────────────────────────────
 
+function ManagementView({ season }) {
+    const [activeSection, setActiveSection] = useState("drivers");
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await apiFetch(`/api/${activeSection}`);
+            setItems(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [activeSection]);
+
+    const handleDelete = async (id) => {
+        if (!confirm(`Are you sure you want to delete this ${activeSection.slice(0, -1)}?`)) return;
+        try {
+            await fetch(`/api/${activeSection}/${id}`, { method: 'DELETE' });
+            fetchData();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        // Simple numeric conversions
+        if (data.id) data.id = Number(data.id);
+        if (data.teamId) data.teamId = Number(data.teamId);
+        if (data.points) data.points = Number(data.points);
+        if (data.number) data.number = Number(data.number);
+
+        try {
+            const method = editingItem ? 'PUT' : 'POST';
+            const url = editingItem ? `/api/${activeSection}/${editingItem.id}` : `/api/${activeSection}`;
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                setShowModal(false);
+                setEditingItem(null);
+                fetchData();
+            } else {
+                const err = await res.json();
+                alert(err.message || "Operation failed.");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    return (
+        <div style={{ padding: '2rem 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem' }}>
+                <div style={{ display: "flex", gap: "3rem" }}>
+                    {["drivers", "teams", "news", "races"].map(sec => (
+                        <button
+                            key={sec}
+                            className={`nav-link-pro ${activeSection === sec ? "active" : ""}`}
+                            onClick={() => setActiveSection(sec)}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        >
+                            {sec.toUpperCase()}_CONTROL
+                        </button>
+                    ))}
+                </div>
+                <button
+                    className="michroma"
+                    onClick={() => { setEditingItem(null); setShowModal(true); }}
+                    style={{
+                        background: 'var(--f1-red)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '12px 24px',
+                        fontSize: '0.6rem',
+                        letterSpacing: '2px',
+                        cursor: 'pointer',
+                        borderRadius: '2px'
+                    }}
+                >
+                    ADD_NEW_{activeSection.slice(0, -1).toUpperCase()}
+                </button>
+            </div>
+
+            <div className="pro-card-absolute" style={{ padding: '0', background: 'rgba(2, 4, 8, 0.4)', position: 'relative' }}>
+                <div className="hud-corner hud-bl" />
+                <div style={{ overflowX: 'auto' }}>
+                    <table className="standing-table-pro" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                                <th style={{ padding: '1.5rem 2.5rem', textAlign: 'left', fontSize: '0.65rem', color: 'var(--text-mute)', letterSpacing: '1px' }}>ID</th>
+                                <th style={{ padding: '1.5rem 1.5rem', textAlign: 'left', fontSize: '0.65rem', color: 'var(--text-mute)', letterSpacing: '1px' }}>NAME / TITLE</th>
+                                <th style={{ padding: '1.5rem 1.5rem', textAlign: 'left', fontSize: '0.65rem', color: 'var(--text-mute)', letterSpacing: '1px' }}>METADATA</th>
+                                <th style={{ padding: '1.5rem 2.5rem', textAlign: 'right', fontSize: '0.65rem', color: 'var(--text-mute)', letterSpacing: '1px' }}>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="4" style={{ padding: '4rem', textAlign: 'center', opacity: 0.5 }} className="michroma">SYNCHRONIZING...</td></tr>
+                            ) : items.map((item) => (
+                                <tr key={item.id} className="standing-row-pro">
+                                    <td style={{ padding: '1.2rem 2.5rem', opacity: 0.5, fontFamily: 'Michroma', fontSize: '0.7rem' }}>{item.id}</td>
+                                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700 }}>{item.name || item.title}</td>
+                                    <td style={{ padding: '1.2rem 1.5rem', fontSize: '0.75rem', color: 'var(--text-mute)' }}>
+                                        {activeSection === 'drivers' && `${item.teamName} // ${item.status}`}
+                                        {activeSection === 'teams' && `${item.teamPrincipal} // ${item.nationality}`}
+                                        {activeSection === 'news' && `${item.category} // S${item.season}`}
+                                        {activeSection === 'races' && `${item.circuit} // ${item.date} // S${item.season}`}
+                                    </td>
+                                    <td style={{ padding: '1.2rem 2.5rem', textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                            <button
+                                                onClick={() => { setEditingItem(item); setShowModal(true); }}
+                                                style={{ background: 'none', border: 'none', color: 'var(--telemetry-cyan)', cursor: 'pointer', fontSize: '0.6rem', fontFamily: 'Michroma' }}
+                                            >
+                                                EDIT
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                style={{ background: 'none', border: 'none', color: 'var(--f1-red)', cursor: 'pointer', fontSize: '0.6rem', fontFamily: 'Michroma' }}
+                                            >
+                                                DELETE
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {showModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 5000, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+                    <div className="pro-card-absolute" style={{ width: '500px', padding: '3rem', position: 'relative' }}>
+                        <div className="hud-corner hud-tl" />
+                        <h2 className="michroma" style={{ fontSize: '1rem', marginBottom: '2rem' }}>{editingItem ? 'EDIT' : 'CREATE'}_{activeSection.slice(0, -1).toUpperCase()}</h2>
+                        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>NAME_{activeSection === 'news' ? 'TITLE' : 'IDENTITY'}</label>
+                                <input name={activeSection === 'news' ? 'title' : 'name'} defaultValue={editingItem?.name || editingItem?.title} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff', outline: 'none' }} />
+                            </div>
+
+                            {activeSection === 'drivers' && (
+                                <>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>TEAM_ID</label>
+                                            <input name="teamId" type="number" defaultValue={editingItem?.teamId} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>NUMBER</label>
+                                            <input name="number" type="number" defaultValue={editingItem?.number} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>STATUS</label>
+                                        <select name="status" defaultValue={editingItem?.status || "Active"} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }}>
+                                            <option value="Active">Active</option>
+                                            <option value="Third">Third Driver</option>
+                                            <option value="Reserve">Reserve</option>
+                                            <option value="Retired">Retired</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            {activeSection === 'news' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>SUMMARY</label>
+                                    <textarea name="summary" defaultValue={editingItem?.summary} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff', minHeight: '100px' }} />
+                                </div>
+                            )}
+
+                            {activeSection === 'races' && (
+                                <>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>ROUND</label>
+                                            <input name="round" type="number" defaultValue={editingItem?.round} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>SEASON</label>
+                                            <input name="season" type="number" defaultValue={editingItem?.season || season} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>CIRCUIT</label>
+                                            <input name="circuit" defaultValue={editingItem?.circuit} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>DATE (YYYY-MM-DD)</label>
+                                            <input name="date" defaultValue={editingItem?.date} placeholder="2026-03-05" required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>WINNER_NAME</label>
+                                            <input name="winnerName" defaultValue={editingItem?.winnerName} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>POLE_NAME</label>
+                                            <input name="poleName" defaultValue={editingItem?.poleName} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>STATUS</label>
+                                        <select name="status" defaultValue={editingItem?.status || "provisional"} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }}>
+                                            <option value="provisional">Provisional</option>
+                                            <option value="finalized">Finalized</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                <button type="submit" className="michroma" style={{ flex: 1, padding: '14px', background: 'var(--f1-red)', border: 'none', color: '#fff', fontSize: '0.6rem', letterSpacing: '2px', cursor: 'pointer' }}>EXECUTE_SAVE</button>
+                                <button type="button" className="michroma" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.6rem', letterSpacing: '2px', cursor: 'pointer' }}>ABORT</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 function DashboardContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -1212,50 +1455,52 @@ function DashboardContent() {
             <main>
                 {(!selectedArticle && !searchParams.get("articleId")) ? (
                     <>
-                        <header className="hero-hud container">
-                            <div className="hero-hud-content">
-                                <div className="hud-corner hud-tl" />
-                                <div className="hud-corner hud-tr" />
-                                <div className="hud-corner hud-bl" />
-                                <div className="hud-corner hud-br" />
+                        {activeTab !== "management" && (
+                            <header className="hero-hud container">
+                                <div className="hero-hud-content">
+                                    <div className="hud-corner hud-tl" />
+                                    <div className="hud-corner hud-tr" />
+                                    <div className="hud-corner hud-bl" />
+                                    <div className="hud-corner hud-br" />
 
-                                {intro.heroImageUrl ? (
-                                    <div style={{
-                                        marginBottom: '2rem',
-                                        borderRadius: '4px',
-                                        overflow: 'hidden',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        position: 'relative',
-                                        maxHeight: '320px'
-                                    }}>
-                                        <div className="scanline" style={{ opacity: 0.1 }} />
-                                        <img
-                                            src={intro.heroImageUrl}
-                                            alt="Season Hero"
-                                            style={{
-                                                width: '100%',
-                                                height: '320px',
-                                                display: 'block',
-                                                objectFit: 'cover',
-                                                filter: 'brightness(0.8) contrast(1.2)'
-                                            }}
-                                        />
+                                    {intro.heroImageUrl ? (
+                                        <div style={{
+                                            marginBottom: '2rem',
+                                            borderRadius: '4px',
+                                            overflow: 'hidden',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            position: 'relative',
+                                            maxHeight: '320px'
+                                        }}>
+                                            <div className="scanline" style={{ opacity: 0.1 }} />
+                                            <img
+                                                src={intro.heroImageUrl}
+                                                alt="Season Hero"
+                                                style={{
+                                                    width: '100%',
+                                                    height: '320px',
+                                                    display: 'block',
+                                                    objectFit: 'cover',
+                                                    filter: 'brightness(0.8) contrast(1.2)'
+                                                }}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <h1 className="michroma">{intro.title.split(' ')[0]} {intro.title.split(' ')[1]}<br /><span style={{ color: 'var(--f1-red)' }}>{intro.title.split(' ').slice(2).join(' ')}.</span></h1>
+                                    )}
+                                    <p className="michroma" style={{ fontSize: '0.75rem', opacity: 0.5, letterSpacing: '4px', maxWidth: '800px', lineHeight: 2, marginBottom: '2rem' }}>
+                                        {intro.description.toUpperCase()}
+                                    </p>
+
+                                    <div className="status-bar">
+                                        <span>LOCAL_TIME: <b>{currentTime || "SYNCING..."}</b></span>
+                                        {intro.moments.map((m, i) => (
+                                            <span key={i}>KEY_MOMENT_0{i + 1}: <b style={{ color: 'var(--f1-red)' }}>{m}</b></span>
+                                        ))}
                                     </div>
-                                ) : (
-                                    <h1 className="michroma">{intro.title.split(' ')[0]} {intro.title.split(' ')[1]}<br /><span style={{ color: 'var(--f1-red)' }}>{intro.title.split(' ').slice(2).join(' ')}.</span></h1>
-                                )}
-                                <p className="michroma" style={{ fontSize: '0.75rem', opacity: 0.5, letterSpacing: '4px', maxWidth: '800px', lineHeight: 2, marginBottom: '2rem' }}>
-                                    {intro.description.toUpperCase()}
-                                </p>
-
-                                <div className="status-bar">
-                                    <span>LOCAL_TIME: <b>{currentTime || "SYNCING..."}</b></span>
-                                    {intro.moments.map((m, i) => (
-                                        <span key={i}>KEY_MOMENT_0{i + 1}: <b style={{ color: 'var(--f1-red)' }}>{m}</b></span>
-                                    ))}
                                 </div>
-                            </div>
-                        </header>
+                            </header>
+                        )}
 
                         <div className="container" style={{ minHeight: "900px" }}>
                             {loading ? (
@@ -1265,6 +1510,7 @@ function DashboardContent() {
                                     {activeTab === "intelligence" && <IntelligenceView stats={stats} season={season} />}
                                     {activeTab === "editorial" && <EditorialView season={season} onOpenArticle={setSelectedArticle} />}
                                     {activeTab === "paddock" && <PaddockView teams={teams} drivers={drivers} paddockTab={paddockTab} season={season} />}
+                                    {activeTab === "management" && user?.role === "admin" && <ManagementView season={season} />}
                                 </>
                             )}
                         </div>

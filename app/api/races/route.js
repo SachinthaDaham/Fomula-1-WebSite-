@@ -6,8 +6,10 @@
  */
 
 import { NextResponse } from "next/server";
-import { racesStore } from "@/lib/store";
+import { ensureAdmin } from "@/lib/auth";
+import Race from "@/models/Race";
 import { AppError, withErrorHandler } from "@/lib/errors";
+import connectDB from "@/lib/mongodb";
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
@@ -26,20 +28,34 @@ function validateRaceBody(body) {
 
 // ─── GET /api/races ───────────────────────────────────────────────────────────
 
-export const GET = withErrorHandler(async () => {
-    const races = racesStore.getAll();
-    // Sort by date ascending
-    const sorted = [...races].sort((a, b) => new Date(a.date) - new Date(b.date));
-    return NextResponse.json({ success: true, count: sorted.length, data: sorted }, { status: 200 });
+export const GET = withErrorHandler(async (request) => {
+    await connectDB();
+    const { searchParams } = new URL(request.url);
+    const season = searchParams.get("season");
+
+    const query = {};
+    if (season) query.season = Number(season);
+
+    const races = await Race.find(query).sort({ date: 1 });
+    return NextResponse.json({ success: true, count: races.length, data: races }, { status: 200 });
 });
 
 // ─── POST /api/races ──────────────────────────────────────────────────────────
 
 export const POST = withErrorHandler(async (request) => {
+    await ensureAdmin(request);
+    await connectDB();
+
     const body = await request.json().catch(() => { throw new AppError("Invalid JSON body.", 400); });
 
     validateRaceBody(body);
 
-    const race = racesStore.create(body);
+    // Auto-increment ID if not provided
+    if (!body.id) {
+        const lastRace = await Race.findOne().sort({ id: -1 });
+        body.id = lastRace ? lastRace.id + 1 : 1000;
+    }
+
+    const race = await Race.create(body);
     return NextResponse.json({ success: true, message: "Race created.", data: race }, { status: 201 });
 });

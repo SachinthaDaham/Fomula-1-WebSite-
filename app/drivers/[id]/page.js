@@ -154,7 +154,7 @@ export default function DriverProfile() {
                             <span style={{ color: 'var(--f1-red)' }}>{driver.name.split(' ').slice(1).join(' ').toUpperCase()}</span>
                         </h1>
                         <div className="michroma" style={{ fontSize: '0.7rem', color: 'var(--telemetry-cyan)', marginBottom: '3rem' }}>
-                            {driver.nationality} // {driver.teamName.toUpperCase()}
+                            {driver.nationality} // {driver.teamName?.toUpperCase()}
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '4rem' }}>

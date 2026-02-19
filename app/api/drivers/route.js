@@ -1,63 +1,44 @@
-/**
- * app/api/drivers/route.js
- * Returns driver list - when season is given, returns all active drivers
- * enriched with their points for that season.
- */
-
 import { NextResponse } from "next/server";
-import { driversStore, teamsStore, resultsStore } from "@/lib/store";
-import { withErrorHandler } from "@/lib/errors";
-import { enforceMaxDriversPerTeam } from "@/lib/rules";
+import connectDB from "@/lib/mongodb";
+import Driver from "@/models/Driver";
+import Team from "@/models/Team";
+import { withErrorHandler, AppError } from "@/lib/errors";
+import { ensureAdmin } from "@/lib/auth";
 
 export const GET = withErrorHandler(async (request) => {
+    await connectDB();
     const { searchParams } = new URL(request.url);
     const teamId = searchParams.get("teamId");
     const status = searchParams.get("status");
     const season = searchParams.get("season");
 
-    let drivers = driversStore.getAll();
+    let query = {};
+    if (teamId) query.teamId = Number(teamId);
+    if (status) query.status = status;
 
-    // When filtering by season: do NOT filter out drivers; instead enrich with
-    // season points. Return all Active drivers so the paddock view is always populated.
-    // If a specific status is requested, honour it; otherwise default to "Active".
-    const effectiveStatus = status || (season ? "Active" : null);
+    const drivers = await Driver.find(query).lean();
+    const allTeams = await Team.find({}).lean();
 
-    if (teamId) drivers = drivers.filter(d => d.teamId === Number(teamId));
-    if (effectiveStatus) drivers = drivers.filter(d => (d.status || "Active").toLowerCase() === effectiveStatus.toLowerCase());
-
-    const allTeams = teamsStore.getAll();
-
-    // Build points-for-season lookup when season param is present
-    let seasonPointsMap = {};
-    if (season) {
-        const seasonResults = resultsStore.getBySeason(season);
-        seasonResults.forEach(r => {
-            if (!seasonPointsMap[r.driverId]) seasonPointsMap[r.driverId] = 0;
-            seasonPointsMap[r.driverId] += r.points;
-        });
-    }
-
-    const enriched = drivers.map(d => ({
+    const data = drivers.map(d => ({
         ...d,
+        id: d.id, // Ensure numeric id is present for frontend
         teamName: allTeams.find(t => t.id === d.teamId)?.name ?? "Unknown",
-        seasonPoints: seasonPointsMap[d.id] ?? 0,
     }));
 
-    // If season given, sort by season points descending
-    if (season) {
-        enriched.sort((a, b) => b.seasonPoints - a.seasonPoints);
-    }
-
-    return NextResponse.json({ success: true, count: enriched.length, data: enriched }, { status: 200 });
+    return NextResponse.json({ success: true, count: data.length, data }, { status: 200 });
 });
 
 export const POST = withErrorHandler(async (request) => {
+    await ensureAdmin(request);
+    await connectDB();
     const body = await request.json();
 
-    if (body.status === "Active") {
-        enforceMaxDriversPerTeam(driversStore.getAll(), body.teamId);
+    // Auto-increment numeric ID if not provided (simple logic for now)
+    if (!body.id) {
+        const lastDriver = await Driver.findOne().sort({ id: -1 });
+        body.id = lastDriver ? lastDriver.id + 1 : 1;
     }
 
-    const driver = driversStore.create(body);
+    const driver = await Driver.create(body);
     return NextResponse.json({ success: true, message: "Driver created.", data: driver }, { status: 201 });
 });

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const DriverSchema = new mongoose.Schema(
     {
+        id: { type: Number, unique: true }, // Legacy numeric ID
         name: { type: String, required: true },
         number: { type: Number, required: true },
         teamId: { type: Number, required: true },
@@ -14,7 +15,7 @@ const DriverSchema = new mongoose.Schema(
         imageUrl: { type: String },
         coverImageUrl: { type: String },
         bio: { type: String },
-        status: { type: String, enum: ["Active", "Retired", "Former"], default: "Active" },
+        status: { type: String, enum: ["Active", "Retired", "Former", "Third", "Reserve"], default: "Active" },
         specs: {
             height: String,
             weight: String,
