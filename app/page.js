@@ -10,8 +10,9 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Footer from "./components/Footer";
 import { DriversMegaMenu, TeamsMegaMenu } from "./components/MegaMenus";
 
@@ -63,6 +64,30 @@ const HERO_IMG = "https://cdn-media.theathletic.com/cdn-cgi/image/width=1200%2Cq
 // ─── Main Home Page ───────────────────────────────────────────────────────────
 export default function Home() {
   const [activeMegaMenu, setActiveMegaMenu] = useState(null);
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  // Fetch User Profile
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          setUser(res.data);
+        }
+      })
+      .catch(err => console.error("Session check failed", err));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      router.refresh();
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   return (
     <div className="absolute-pro-layout">
@@ -120,13 +145,40 @@ export default function Home() {
             </div>
 
             {/* Auth CTAs */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <Link href="/login" className="nav-link-pro michroma" style={{ fontWeight: 700, fontSize: "0.6rem", letterSpacing: "1.5px" }}>
-                SIGN_IN
-              </Link>
-              <Link href="/register" className="nav-cta michroma">
-                REGISTER
-              </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              {user ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className="michroma" style={{ fontSize: '0.45rem', opacity: 0.5, letterSpacing: '1px' }}>{user.role?.toUpperCase()}_IDENT</div>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '0.5px', color: '#fff' }}>{user.name}</div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="michroma"
+                    style={{
+                      background: 'rgba(225,6,0,0.1)',
+                      border: '1px solid rgba(225,6,0,0.3)',
+                      color: 'var(--f1-red)',
+                      fontSize: '0.45rem',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      borderRadius: '2px',
+                      letterSpacing: '1px'
+                    }}
+                  >
+                    LOGOUT
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link href="/login" className="nav-link-pro michroma" style={{ fontWeight: 700, fontSize: "0.6rem", letterSpacing: "1.5px" }}>
+                    SIGN_IN
+                  </Link>
+                  <Link href="/register" className="nav-cta michroma">
+                    REGISTER
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>

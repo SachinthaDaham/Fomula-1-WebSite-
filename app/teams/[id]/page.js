@@ -229,7 +229,7 @@ export default function TeamDetailPage() {
                                 </div>
                                 <div>
                                     <p className="michroma" style={{ fontSize: '0.9rem', lineHeight: 1.8, color: '#fff', fontStyle: 'italic', letterSpacing: '0.5px' }}>
-                                        "{team.driverComments || "ENCRYPTED_DATA_PACKET_PENDING"}"
+                                        &quot;{team.driverComments || "ENCRYPTED_DATA_PACKET_PENDING"}&quot;
                                     </p>
                                     <div className="michroma" style={{ marginTop: '1rem', fontSize: '0.5rem', color: theme.primary, opacity: 0.8 }}>SOURCE: PADDOCK_COMMS_v4.2</div>
                                 </div>

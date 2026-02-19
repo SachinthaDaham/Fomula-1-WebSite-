@@ -806,11 +806,11 @@ function ArticleReader({ article, onBack }) {
                     <div style={{ fontSize: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.2px' }}>
                         <p style={{ marginBottom: '2.5rem', fontWeight: 600 }}>{article.summary}</p>
                         <p style={{ marginBottom: '2rem' }}>Formula 1 technology continues to evolve at a breakneck pace. This latest development marks a significant milestone in our ongoing seasonal analysis. Manufacturers and teams are now fully focused on the technical implications of these changes, which will redefine the competitive landscape for years to come.</p>
-                        <p style={{ marginBottom: '2rem' }}>As we monitor the telemetry and feedback from the paddock, it becomes clear that the margin for error is shrinking. Every millisecond gained through technical optimization is a strategic advantage in the world's most elite racing category.</p>
+                        <p style={{ marginBottom: '2rem' }}>As we monitor the telemetry and feedback from the paddock, it becomes clear that the margin for error is shrinking. Every millisecond gained through technical optimization is a strategic advantage in the world&apos;s most elite racing category.</p>
 
                         <div style={{ margin: '4rem 0', padding: '3rem', background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid var(--f1-red)', borderRadius: '4px' }}>
                             <div className="michroma" style={{ fontSize: '0.7rem', color: 'var(--f1-red)', marginBottom: '1rem' }}>SYSTEM_UPDATE // INTEL_CORNER</div>
-                            <p style={{ fontSize: '1rem', fontStyle: 'italic', opacity: 0.8 }}>"The technical regulations for the upcoming era are the most ambitious we have ever seen. They combine extreme sustainability with the high-performance DNA of Formula 1." — FIA Technical Delegate</p>
+                            <p style={{ fontSize: '1rem', fontStyle: 'italic', opacity: 0.8 }}>&quot;The technical regulations for the upcoming era are the most ambitious we have ever seen. They combine extreme sustainability with the high-performance DNA of Formula 1.&quot; — FIA Technical Delegate</p>
                         </div>
 
                         <p>Stay tuned to the F1 Manager suite for real-time updates as teams react to these latest intelligence packets. Full diagnostic reports will be available following the next testing session.</p>
@@ -1256,20 +1256,36 @@ function ManagementView({ season }) {
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>STATUS</label>
                                         <select name="status" defaultValue={editingItem?.status || "Active"} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }}>
-                                            <option value="Active">Active</option>
-                                            <option value="Third">Third Driver</option>
-                                            <option value="Reserve">Reserve</option>
-                                            <option value="Retired">Retired</option>
+                                            <option value="Active" style={{ background: '#111', color: '#fff' }}>Active</option>
+                                            <option value="Third" style={{ background: '#111', color: '#fff' }}>Third Driver</option>
+                                            <option value="Reserve" style={{ background: '#111', color: '#fff' }}>Reserve</option>
+                                            <option value="Retired" style={{ background: '#111', color: '#fff' }}>Retired</option>
                                         </select>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>PROFILE_IMAGE_URL</label>
+                                            <input name="imageUrl" defaultValue={editingItem?.imageUrl} placeholder="https://..." style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>COVER_IMAGE_URL</label>
+                                            <input name="coverImageUrl" defaultValue={editingItem?.coverImageUrl} placeholder="https://..." style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        </div>
                                     </div>
                                 </>
                             )}
 
                             {activeSection === 'news' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>SUMMARY</label>
-                                    <textarea name="summary" defaultValue={editingItem?.summary} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff', minHeight: '100px' }} />
-                                </div>
+                                <>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>SUMMARY</label>
+                                        <textarea name="summary" defaultValue={editingItem?.summary} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff', minHeight: '100px' }} />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>HERO_IMAGE_URL</label>
+                                        <input name="imageUrl" defaultValue={editingItem?.imageUrl} placeholder="https://..." style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                    </div>
+                                </>
                             )}
 
                             {activeSection === 'races' && (
@@ -1307,8 +1323,8 @@ function ManagementView({ season }) {
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>STATUS</label>
                                         <select name="status" defaultValue={editingItem?.status || "provisional"} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }}>
-                                            <option value="provisional">Provisional</option>
-                                            <option value="finalized">Finalized</option>
+                                            <option value="provisional" style={{ background: '#111', color: '#fff' }}>Provisional</option>
+                                            <option value="finalized" style={{ background: '#111', color: '#fff' }}>Finalized</option>
                                         </select>
                                     </div>
                                 </>

@@ -23,6 +23,12 @@ const DriverSchema = new mongoose.Schema(
             entry: String,
             favTrack: String
         },
+        careerPoints: [
+            {
+                year: Number,
+                note: String
+            }
+        ],
         tacticalStyle: String,
         socials: {
             instagram: String,
