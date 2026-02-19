@@ -411,16 +411,16 @@ h3 {
 
 /* ── Mega Menu Overlay ─────────────────────────────────────────────────────── */
 .mega-menu-overlay {
-  position: fixed;
-  top: 0;
+  position: absolute;
+  top: 100%;
   left: 0;
   right: 0;
   background: var(--mega-bg);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   border-bottom: 3px solid var(--f1-red);
-  padding: 8.5rem 0 3.5rem;
-  z-index: 3500;
+  padding: 3rem 0;
+  z-index: 990;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-12px);
