@@ -64,22 +64,41 @@ export default function LoginPage() {
                     <h1 style={{ marginBottom: "0.5rem", letterSpacing: "2px" }}>SIGN_IN</h1>
                     <p style={{ opacity: 0.5, fontSize: "0.8rem", marginBottom: "2rem" }}>Access the F1 Manager Command Centre.</p>
 
-                    {error && <div style={{ color: "#ff4d4d", marginBottom: "1rem", fontSize: "0.8rem" }}>{error}</div>}
+                    {error && (
+                        <div style={{
+                            background: 'rgba(225, 6, 0, 0.1)',
+                            borderLeft: '4px solid var(--f1-red)',
+                            padding: '12px 16px',
+                            color: '#ff4d4d',
+                            marginBottom: '1.5rem',
+                            fontSize: '0.8rem',
+                            fontFamily: 'Space Grotesk',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                        }}>
+                            <span style={{ fontFamily: 'Michroma', fontSize: '0.6rem', letterSpacing: '1px' }}>ERR</span>
+                            {error}
+                        </div>
+                    )}
 
-                    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                        <input name="email" type="email" placeholder="Email" onChange={handleChange} required
-                            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.8rem", color: "#fff", borderRadius: "4px" }} />
-                        <input name="password" type="password" placeholder="Password" onChange={handleChange} required
-                            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.8rem", color: "#fff", borderRadius: "4px" }} />
+                    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ fontSize: '0.6rem', fontFamily: 'Michroma', color: 'var(--text-mute)', marginBottom: '6px', letterSpacing: '1px' }}>SECURE_EMAIL</div>
+                            <input name="email" type="email" className="hud-input" placeholder="pilot@f1.com" onChange={handleChange} required />
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ fontSize: '0.6rem', fontFamily: 'Michroma', color: 'var(--text-mute)', marginBottom: '6px', letterSpacing: '1px' }}>ACCESS_CODE</div>
+                            <input name="password" type="password" className="hud-input" placeholder="Enter credentials" onChange={handleChange} required />
+                        </div>
 
-                        <button type="submit" disabled={loading}
-                            style={{ background: "#E10600", border: "none", padding: "1rem", color: "#fff", fontWeight: "bold", cursor: "pointer", marginTop: "1rem" }}>
-                            {loading ? "AUTHENTICATING..." : "SIGN IN"}
+                        <button type="submit" className="hud-btn" disabled={loading} style={{ marginTop: '1rem' }}>
+                            {loading ? "AUTHENTICATING_LINK..." : "AUTHORIZE_ACCESS"}
                         </button>
                     </form>
 
-                    <p style={{ marginTop: "1.5rem", fontSize: "0.8rem", opacity: 0.6, textAlign: "center" }}>
-                        No account? <Link href="/register" style={{ color: "#E10600" }}>Register here</Link>
+                    <p style={{ marginTop: "2rem", fontSize: "0.85rem", opacity: 0.6, textAlign: "center" }}>
+                        NO_IDENTIFICATION_FOUND? <Link href="/register" style={{ color: "var(--f1-red)", textDecoration: 'none', fontWeight: 'bold' }}>REQUEST_ACCESS</Link>
                     </p>
                 </div>
             </div>

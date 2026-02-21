@@ -33,6 +33,14 @@ export const POST = withErrorHandler(async (request) => {
     await connectDB();
     const body = await request.json();
 
+    // Basic Validation before hitting DB
+    if (!body.name || !body.teamId || !body.number || !body.nationality) {
+        return NextResponse.json(
+            { success: false, message: "Missing required fields: name, teamId, number, nationality." },
+            { status: 400 }
+        );
+    }
+
     // Auto-increment numeric ID if not provided (simple logic for now)
     if (!body.id) {
         const lastDriver = await Driver.findOne().sort({ id: -1 });

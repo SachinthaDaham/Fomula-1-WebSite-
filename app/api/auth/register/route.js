@@ -12,16 +12,37 @@ export async function POST(request) {
     try {
         const { name, email, password } = await request.json();
 
-        if (!name || !email || !password) {
+        // 1. Sanitize Inputs
+        const trimmedName = name?.trim();
+        const trimmedEmail = email?.trim()?.toLowerCase();
+        const trimmedPassword = password?.trim();
+
+        // 2. Strict Validation
+        if (!trimmedName || !trimmedEmail || !trimmedPassword) {
             return NextResponse.json(
                 { success: false, message: "Name, email, and password are required." },
                 { status: 400 }
             );
         }
 
+        if (trimmedPassword.length < 6) {
+            return NextResponse.json(
+                { success: false, message: "Password must be at least 6 characters long." },
+                { status: 400 }
+            );
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            return NextResponse.json(
+                { success: false, message: "Please provide a valid email address." },
+                { status: 400 }
+            );
+        }
+
         await connectDB();
 
-        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        const existingUser = await User.findOne({ email: trimmedEmail });
         if (existingUser) {
             return NextResponse.json(
                 { success: false, message: "An account with this email already exists." },
@@ -29,11 +50,11 @@ export async function POST(request) {
             );
         }
 
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await bcrypt.hash(trimmedPassword, 12);
 
         const user = await User.create({
-            name,
-            email: email.toLowerCase(),
+            name: trimmedName,
+            email: trimmedEmail,
             password: hashedPassword,
             role: "user", // Explicitly set role to user
         });

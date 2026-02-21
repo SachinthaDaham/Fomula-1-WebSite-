@@ -24,6 +24,14 @@ export const POST = withErrorHandler(async (request) => {
     await connectDB();
     const body = await request.json();
 
+    // Basic Validation before hitting DB
+    if (!body.name) {
+        return NextResponse.json(
+            { success: false, message: "Team name is required." },
+            { status: 400 }
+        );
+    }
+
     if (!body.id) {
         const lastTeam = await Team.findOne().sort({ id: -1 });
         body.id = lastTeam ? lastTeam.id + 1 : 1;

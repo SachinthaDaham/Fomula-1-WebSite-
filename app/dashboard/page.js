@@ -1238,7 +1238,7 @@ function ManagementView({ season }) {
                         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>NAME_{activeSection === 'news' ? 'TITLE' : 'IDENTITY'}</label>
-                                <input name={activeSection === 'news' ? 'title' : 'name'} defaultValue={editingItem?.name || editingItem?.title} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff', outline: 'none' }} />
+                                <input name={activeSection === 'news' ? 'title' : 'name'} defaultValue={editingItem?.name || editingItem?.title} required className="hud-input" />
                             </div>
 
                             {activeSection === 'drivers' && (
@@ -1246,30 +1246,30 @@ function ManagementView({ season }) {
                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>TEAM_ID</label>
-                                            <input name="teamId" type="number" defaultValue={editingItem?.teamId} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="teamId" type="number" defaultValue={editingItem?.teamId} required className="hud-input" />
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>NUMBER</label>
-                                            <input name="number" type="number" defaultValue={editingItem?.number} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="number" type="number" defaultValue={editingItem?.number} required className="hud-input" />
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>STATUS</label>
-                                        <select name="status" defaultValue={editingItem?.status || "Active"} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }}>
-                                            <option value="Active" style={{ background: '#111', color: '#fff' }}>Active</option>
-                                            <option value="Third" style={{ background: '#111', color: '#fff' }}>Third Driver</option>
-                                            <option value="Reserve" style={{ background: '#111', color: '#fff' }}>Reserve</option>
-                                            <option value="Retired" style={{ background: '#111', color: '#fff' }}>Retired</option>
+                                        <select name="status" defaultValue={editingItem?.status || "Active"} className="hud-input hud-select">
+                                            <option value="Active">Active</option>
+                                            <option value="Third">Third Driver</option>
+                                            <option value="Reserve">Reserve</option>
+                                            <option value="Retired">Retired</option>
                                         </select>
                                     </div>
                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>PROFILE_IMAGE_URL</label>
-                                            <input name="imageUrl" defaultValue={editingItem?.imageUrl} placeholder="https://..." style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="imageUrl" defaultValue={editingItem?.imageUrl} placeholder="https://..." className="hud-input" />
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>COVER_IMAGE_URL</label>
-                                            <input name="coverImageUrl" defaultValue={editingItem?.coverImageUrl} placeholder="https://..." style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="coverImageUrl" defaultValue={editingItem?.coverImageUrl} placeholder="https://..." className="hud-input" />
                                         </div>
                                     </div>
                                 </>
@@ -1279,11 +1279,11 @@ function ManagementView({ season }) {
                                 <>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>SUMMARY</label>
-                                        <textarea name="summary" defaultValue={editingItem?.summary} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff', minHeight: '100px' }} />
+                                        <textarea name="summary" defaultValue={editingItem?.summary} required className="hud-input" style={{ minHeight: '100px', resize: 'vertical' }} />
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>HERO_IMAGE_URL</label>
-                                        <input name="imageUrl" defaultValue={editingItem?.imageUrl} placeholder="https://..." style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                        <input name="imageUrl" defaultValue={editingItem?.imageUrl} placeholder="https://..." className="hud-input" />
                                     </div>
                                 </>
                             )}
@@ -1293,46 +1293,46 @@ function ManagementView({ season }) {
                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>ROUND</label>
-                                            <input name="round" type="number" defaultValue={editingItem?.round} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="round" type="number" defaultValue={editingItem?.round} required className="hud-input" />
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>SEASON</label>
-                                            <input name="season" type="number" defaultValue={editingItem?.season || season} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="season" type="number" defaultValue={editingItem?.season || season} required className="hud-input" />
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>CIRCUIT</label>
-                                            <input name="circuit" defaultValue={editingItem?.circuit} required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="circuit" defaultValue={editingItem?.circuit} required className="hud-input" />
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>DATE (YYYY-MM-DD)</label>
-                                            <input name="date" defaultValue={editingItem?.date} placeholder="2026-03-05" required style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="date" defaultValue={editingItem?.date} placeholder="2026-03-05" required className="hud-input" />
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>WINNER_NAME</label>
-                                            <input name="winnerName" defaultValue={editingItem?.winnerName} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="winnerName" defaultValue={editingItem?.winnerName} className="hud-input" />
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>POLE_NAME</label>
-                                            <input name="poleName" defaultValue={editingItem?.poleName} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }} />
+                                            <input name="poleName" defaultValue={editingItem?.poleName} className="hud-input" />
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label className="michroma" style={{ fontSize: '0.55rem', opacity: 0.5 }}>STATUS</label>
-                                        <select name="status" defaultValue={editingItem?.status || "provisional"} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', color: '#fff' }}>
-                                            <option value="provisional" style={{ background: '#111', color: '#fff' }}>Provisional</option>
-                                            <option value="finalized" style={{ background: '#111', color: '#fff' }}>Finalized</option>
+                                        <select name="status" defaultValue={editingItem?.status || "provisional"} className="hud-input hud-select">
+                                            <option value="provisional">Provisional</option>
+                                            <option value="finalized">Finalized</option>
                                         </select>
                                     </div>
                                 </>
                             )}
 
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="submit" className="michroma" style={{ flex: 1, padding: '14px', background: 'var(--f1-red)', border: 'none', color: '#fff', fontSize: '0.6rem', letterSpacing: '2px', cursor: 'pointer' }}>EXECUTE_SAVE</button>
-                                <button type="button" className="michroma" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.6rem', letterSpacing: '2px', cursor: 'pointer' }}>ABORT</button>
+                                <button type="submit" className="hud-btn" style={{ flex: 1 }}>EXECUTE_SAVE</button>
+                                <button type="button" className="hud-btn" onClick={() => setShowModal(false)} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', boxShadow: 'none' }}>ABORT</button>
                             </div>
                         </form>
                     </div>
