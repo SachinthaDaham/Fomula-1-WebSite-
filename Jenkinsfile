@@ -36,6 +36,15 @@ pipeline {
             }
         }
 
+        stage('Security Scan') {
+            steps {
+                echo 'Running NSA-Level Threat Detection...'
+                // Run npm audit. We use || true so it doesn't fail the build immediately 
+                // on vulnerabilities, but logs it for review.
+                sh 'npm audit --audit-level=high || true'
+            }
+        }
+
         stage('Static Analysis (Lint)') {
             steps {
                 echo 'Running Telemetry Code Quality Checks...'
@@ -50,10 +59,11 @@ pipeline {
             }
         }
 
-        stage('Verify Artifacts') {
+        stage('Package Release') {
             steps {
-                echo 'Validating Build Artifacts...'
-                sh 'ls -la .next'
+                echo 'Bundling Standalone Telemetry Server...'
+                // Compress the standalone output for a lightweight deployment payload
+                sh 'tar -czf release-candidate.tar.gz .next/standalone .next/static public'
             }
         }
     }
@@ -61,6 +71,8 @@ pipeline {
     post {
         success {
             echo 'PIPELINE_COMPLETE: Deployment candidates ready.'
+            // Archive the artifact so it can be downloaded from the Jenkins UI
+            archiveArtifacts artifacts: 'release-candidate.tar.gz', fingerprint: true
         }
         failure {
             echo 'PIPELINE_TERMINATED: Critical failure detected in stream.'
