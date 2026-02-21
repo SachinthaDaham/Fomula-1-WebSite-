@@ -5,12 +5,25 @@ pipeline {
         // Environment stubs for MongoDB and JWT (needed for Next.js build if referenced)
         MONGODB_URI = 'mongodb://localhost:27017/f1'
         JWT_SECRET  = 'dummy_secret_for_build'
+        
+        // Configure local Node.js path for the Jenkins container
+        NODE_DIR = "${env.WORKSPACE}/node_custom"
+        PATH = "${env.WORKSPACE}/node_custom/bin:${env.PATH}"
     }
 
     stages {
         stage('Initialize') {
             steps {
                 echo 'Initializing F1 Manager Intelligence Pipeline...'
+                sh '''
+                    if [ ! -x "$NODE_DIR/bin/node" ]; then
+                        echo "Node.js not found. Downloading Node.js v20..."
+                        curl -fsSL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.gz | tar -xz
+                        mkdir -p "$NODE_DIR"
+                        cp -r node-v20.11.1-linux-x64/* "$NODE_DIR/"
+                        rm -rf node-v20.11.1-linux-x64
+                    fi
+                '''
                 sh 'node -v'
                 sh 'npm -v'
             }
