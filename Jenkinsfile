@@ -11,36 +11,36 @@ pipeline {
         stage('Initialize') {
             steps {
                 echo 'Initializing F1 Manager Intelligence Pipeline...'
-                bat 'node -v'
-                bat 'npm -v'
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Synchronizing Packages...'
-                bat 'npm install'
+                sh 'npm install'
             }
         }
 
         stage('Static Analysis (Lint)') {
             steps {
                 echo 'Running Telemetry Code Quality Checks...'
-                bat 'npm run lint'
+                sh 'npm run lint'
             }
         }
 
         stage('Build Production') {
             steps {
                 echo 'Generating Optimization Binary (Next.js Build)...'
-                bat 'npm run build'
+                sh 'npm run build'
             }
         }
 
         stage('Verify Artifacts') {
             steps {
                 echo 'Validating Build Artifacts...'
-                bat 'dir .next'
+                sh 'ls -la .next'
             }
         }
     }
