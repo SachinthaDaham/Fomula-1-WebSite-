@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Mega Menu Data ───────────────────────────────────────────────────────────
 export const MEGA_DRIVERS = [
@@ -43,8 +44,29 @@ export const MEGA_TEAMS = [
 
 // ─── Sanitization Helper ───────────────────────────────────────────────────
 const sanitizeSearch = (query) => {
-    // Escape special regex characters to prevent research from crashing
     return query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').trim();
+};
+
+// ─── Animation Variants ────────────────────────────────────────────────────────
+const menuVariants = {
+    hidden: { opacity: 0, y: -20, filter: "blur(10px)" },
+    visible: {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: { type: "spring", stiffness: 100, damping: 20, staggerChildren: 0.05, delayChildren: 0.1 }
+    },
+    exit: {
+        opacity: 0,
+        y: -10,
+        filter: "blur(10px)",
+        transition: { duration: 0.2 }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 120, damping: 15 } }
 };
 
 // ─── Shared Drivers Mega Menu ──────────────────────────────────────────────
@@ -53,7 +75,6 @@ export function DriversMegaMenu({ active, onClose, season }) {
     const [activeTeamId, setActiveTeamId] = useState(null);
     const seasonParam = season ? `?season=${season}` : "";
 
-    // Reset filters when menu closes
     useEffect(() => {
         if (!active) {
             setSearchQuery("");
@@ -69,112 +90,131 @@ export function DriversMegaMenu({ active, onClose, season }) {
     });
 
     return (
-        <div
-            className={`mega-menu-overlay${active ? " active" : ""}`}
-            onMouseLeave={onClose}
-        >
-            <div className="container">
-                <div style={{ marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <div className="mega-search-wrapper" style={{ marginBottom: 0, flex: 1, maxWidth: '500px' }}>
-                            <span className="mega-search-icon">⌕</span>
-                            <input
-                                type="text"
-                                placeholder="TYPE_TO_SEARCH_PILOTS..."
-                                className="mega-search-input"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                autoFocus={active}
-                            />
+        <AnimatePresence>
+            {active && (
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={menuVariants}
+                    className="mega-menu-overlay active"
+                    onMouseLeave={onClose}
+                    style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--mega-bg)', backdropFilter: 'blur(40px)', borderBottom: '1px solid var(--border-glass)' }}
+                >
+                    <div className="container" style={{ padding: '2rem 2.5rem' }}>
+                        <div style={{ marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div className="mega-search-wrapper" style={{ marginBottom: 0, flex: 1, maxWidth: '500px' }}>
+                                    <span className="mega-search-icon">⌕</span>
+                                    <input
+                                        type="text"
+                                        placeholder="TYPE_TO_SEARCH_PILOTS..."
+                                        className="mega-search-input"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        autoFocus={active}
+                                    />
+                                </div>
+
+                                <div style={{ textAlign: 'right' }}>
+                                    <span className="michroma" style={{ fontSize: "0.5rem", color: "var(--text-mute)", letterSpacing: "3px", display: 'block', marginBottom: '4px' }}>
+                                        STATUS: ACTIVE_INTEL_STREAM
+                                    </span>
+                                    <span className="michroma" style={{ fontSize: "0.6rem", color: "var(--f1-red)", letterSpacing: "1px" }}>
+                                        {filteredDrivers.length} / {MEGA_DRIVERS.length} PILOTS_MATCHED
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Team Filter Bar */}
+                            <div className="team-filter-bar">
+                                <button
+                                    className={`team-filter-pill${activeTeamId === null ? ' active' : ''}`}
+                                    onClick={(e) => { e.stopPropagation(); setActiveTeamId(null); }}
+                                    style={{
+                                        boxShadow: activeTeamId === null ? "0 0 15px rgba(225,6,0,0.3)" : "none"
+                                    }}
+                                >
+                                    ALL
+                                </button>
+                                {MEGA_TEAMS.map(team => (
+                                    <button
+                                        key={team.id}
+                                        className={`team-filter-pill${activeTeamId === team.id ? ' active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setActiveTeamId(team.id); }}
+                                    >
+                                        {team.name.split(' ')[0].toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
-                        <div style={{ textAlign: 'right' }}>
-                            <span className="michroma" style={{ fontSize: "0.5rem", color: "var(--text-mute)", letterSpacing: "3px", display: 'block', marginBottom: '4px' }}>
-                                STATUS: ACTIVE_INTEL_STREAM
-                            </span>
-                            <span className="michroma" style={{ fontSize: "0.6rem", color: "var(--f1-red)", letterSpacing: "1px" }}>
-                                {filteredDrivers.length} / {MEGA_DRIVERS.length} PILOTS_MATCHED
-                            </span>
+                        <div className="mega-menu-grid">
+                            <AnimatePresence>
+                                {filteredDrivers.map(d => (
+                                    <motion.div key={d.id} variants={itemVariants} layout>
+                                        <Link
+                                            href={`/drivers/${d.id}${seasonParam}`}
+                                            className="driver-pill-pro"
+                                            onClick={onClose}
+                                            style={{ display: "flex" }}
+                                        >
+                                            <img
+                                                src={d.img}
+                                                alt={d.lastName}
+                                                className="avatar-mini"
+                                                loading="lazy"
+                                                onError={e => { e.currentTarget.style.background = "#0d1117"; e.currentTarget.style.display = "flex"; }}
+                                            />
+                                            <div className="pill-info">
+                                                <span className="first-name">{d.firstName}</span>
+                                                <span className="last-name">{d.lastName.toUpperCase()}</span>
+                                            </div>
+                                        </Link>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+
+                            {filteredDrivers.length === 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                    style={{
+                                        gridColumn: '1 / -1',
+                                        padding: '4rem 2rem',
+                                        textAlign: 'center',
+                                        background: 'rgba(255,255,255,0.02)',
+                                        borderRadius: '8px',
+                                        border: '1px dashed rgba(255,255,255,0.1)'
+                                    }}>
+                                    <div className="michroma" style={{ fontSize: '1.2rem', color: 'var(--f1-red)', marginBottom: '1rem', opacity: 0.8 }}>
+                                        [ ! ] NO_MATCH_FOUND
+                                    </div>
+                                    <p className="michroma" style={{ fontSize: '0.6rem', color: 'var(--text-mute)', letterSpacing: '2px', marginBottom: '2rem' }}>
+                                        TARGET_DRIVER: "{searchQuery}" NOT_DETECTED_IN_DATABASE
+                                    </p>
+                                    <button
+                                        onClick={() => { setSearchQuery(""); setActiveTeamId(null); }}
+                                        className="mega-btn"
+                                        style={{ background: 'rgba(255,255,255,0.05)' }}
+                                    >
+                                        RESET_FILTERS
+                                    </button>
+                                </motion.div>
+                            )}
+                        </div>
+                        <div className="mega-menu-footer" style={{ marginTop: '2rem' }}>
+                            <Link href={`/dashboard?tab=paddock&subtab=drivers${season ? `&season=${season}` : ""}`} className="mega-btn" onClick={onClose}>
+                                ALL_PILOTS
+                            </Link>
+                            <Link href={`/dashboard?tab=paddock&subtab=drivers${season ? `&season=${season}` : ""}`} className="mega-btn" onClick={onClose}>
+                                HALL_OF_FAME
+                            </Link>
                         </div>
                     </div>
-
-                    {/* Team Filter Bar */}
-                    <div className="team-filter-bar">
-                        <button
-                            className={`team-filter-pill${activeTeamId === null ? ' active' : ''}`}
-                            onClick={(e) => { e.stopPropagation(); setActiveTeamId(null); }}
-                        >
-                            ALL
-                        </button>
-                        {MEGA_TEAMS.map(team => (
-                            <button
-                                key={team.id}
-                                className={`team-filter-pill${activeTeamId === team.id ? ' active' : ''}`}
-                                onClick={(e) => { e.stopPropagation(); setActiveTeamId(team.id); }}
-                            >
-                                {team.name.split(' ')[0].toUpperCase()}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="mega-menu-grid">
-                    {filteredDrivers.map(d => (
-                        <Link
-                            key={d.id}
-                            href={`/drivers/${d.id}${seasonParam}`}
-                            className="driver-pill-pro"
-                            onClick={onClose}
-                        >
-                            <img
-                                src={d.img}
-                                alt={d.lastName}
-                                className="avatar-mini"
-                                loading="lazy"
-                                onError={e => { e.currentTarget.style.background = "#0d1117"; e.currentTarget.style.display = "flex"; }}
-                            />
-                            <div className="pill-info">
-                                <span className="first-name">{d.firstName}</span>
-                                <span className="last-name">{d.lastName.toUpperCase()}</span>
-                            </div>
-                        </Link>
-                    ))}
-                    {filteredDrivers.length === 0 && (
-                        <div style={{
-                            gridColumn: '1 / -1',
-                            padding: '4rem 2rem',
-                            textAlign: 'center',
-                            background: 'rgba(255,255,255,0.02)',
-                            borderRadius: '8px',
-                            border: '1px dashed rgba(255,255,255,0.1)'
-                        }}>
-                            <div className="michroma" style={{ fontSize: '1.2rem', color: 'var(--f1-red)', marginBottom: '1rem', opacity: 0.8 }}>
-                                [ ! ] NO_MATCH_FOUND
-                            </div>
-                            <p className="michroma" style={{ fontSize: '0.6rem', color: 'var(--text-mute)', letterSpacing: '2px', marginBottom: '2rem' }}>
-                                TARGET_DRIVER: "{searchQuery}" NOT_DETECTED_IN_DATABASE
-                            </p>
-                            <button
-                                onClick={() => { setSearchQuery(""); setActiveTeamId(null); }}
-                                className="mega-btn"
-                                style={{ background: 'rgba(255,255,255,0.05)' }}
-                            >
-                                RESET_FILTERS
-                            </button>
-                        </div>
-                    )}
-                </div>
-                <div className="mega-menu-footer">
-                    <Link href={`/dashboard?tab=paddock&subtab=drivers${season ? `&season=${season}` : ""}`} className="mega-btn" onClick={onClose}>
-                        ALL_PILOTS
-                    </Link>
-                    <Link href={`/dashboard?tab=paddock&subtab=drivers${season ? `&season=${season}` : ""}`} className="mega-btn" onClick={onClose}>
-                        HALL_OF_FAME
-                    </Link>
-                </div>
-            </div>
-        </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }
 
@@ -193,95 +233,109 @@ export function TeamsMegaMenu({ active, onClose, season }) {
     });
 
     return (
-        <div
-            className={`mega-menu-overlay${active ? " active" : ""}`}
-            onMouseLeave={onClose}
-        >
-            <div className="container">
-                <div style={{ marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div className="mega-search-wrapper" style={{ marginBottom: 0, flex: 1, maxWidth: '500px' }}>
-                            <span className="mega-search-icon">⌕</span>
-                            <input
-                                type="text"
-                                placeholder="TYPE_TO_SEARCH_TEAMS..."
-                                className="mega-search-input"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                autoFocus={active}
-                            />
+        <AnimatePresence>
+            {active && (
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={menuVariants}
+                    className="mega-menu-overlay active"
+                    onMouseLeave={onClose}
+                    style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--mega-bg)', backdropFilter: 'blur(40px)', borderBottom: '1px solid var(--border-glass)' }}
+                >
+                    <div className="container" style={{ padding: '2rem 2.5rem' }}>
+                        <div style={{ marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div className="mega-search-wrapper" style={{ marginBottom: 0, flex: 1, maxWidth: '500px' }}>
+                                    <span className="mega-search-icon">⌕</span>
+                                    <input
+                                        type="text"
+                                        placeholder="TYPE_TO_SEARCH_TEAMS..."
+                                        className="mega-search-input"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        autoFocus={active}
+                                    />
+                                </div>
+
+                                <div style={{ textAlign: 'right' }}>
+                                    <span className="michroma" style={{ fontSize: "0.5rem", color: "var(--text-mute)", letterSpacing: "3px", display: 'block', marginBottom: '4px' }}>
+                                        STATUS: CONSTRUCTOR_INTEL_LIVE
+                                    </span>
+                                    <span className="michroma" style={{ fontSize: "0.6rem", color: "var(--f1-red)", letterSpacing: "1px" }}>
+                                        {filteredTeams.length} / {MEGA_TEAMS.length} TEAMS_MATCHED
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div style={{ textAlign: 'right' }}>
-                            <span className="michroma" style={{ fontSize: "0.5rem", color: "var(--text-mute)", letterSpacing: "3px", display: 'block', marginBottom: '4px' }}>
-                                STATUS: CONSTRUCTOR_INTEL_LIVE
-                            </span>
-                            <span className="michroma" style={{ fontSize: "0.6rem", color: "var(--f1-red)", letterSpacing: "1px" }}>
-                                {filteredTeams.length} / {MEGA_TEAMS.length} TEAMS_MATCHED
-                            </span>
+                        <div className="team-mega-grid">
+                            <AnimatePresence>
+                                {filteredTeams.map(t => (
+                                    <motion.div key={t.id} variants={itemVariants} layout>
+                                        <Link
+                                            href={`/teams/${t.id}${seasonParam}`}
+                                            className="team-card-pro"
+                                            onClick={onClose}
+                                        >
+                                            <div className="team-card-header">
+                                                <img
+                                                    src={t.logoUrl} alt={t.name}
+                                                    className="team-logo-mini"
+                                                    loading="lazy"
+                                                    onError={e => { e.currentTarget.style.display = "none"; }}
+                                                />
+                                                <span className="team-name-pro">{t.name.toUpperCase()}</span>
+                                            </div>
+                                            <div className="car-profile-container">
+                                                <img
+                                                    src={t.carImageUrl} alt={`${t.name} car`}
+                                                    className="car-profile-img"
+                                                    loading="lazy"
+                                                    onError={e => { e.currentTarget.style.display = "none"; }}
+                                                />
+                                            </div>
+                                        </Link>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                            {filteredTeams.length === 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                    style={{
+                                        gridColumn: '1 / -1',
+                                        padding: '4rem 2rem',
+                                        textAlign: 'center',
+                                        background: 'rgba(255,255,255,0.02)',
+                                        borderRadius: '8px',
+                                        border: '1px dashed rgba(255,255,255,0.1)'
+                                    }}>
+                                    <div className="michroma" style={{ fontSize: '1.2rem', color: 'var(--f1-red)', marginBottom: '1rem', opacity: 0.8 }}>
+                                        [ ! ] NO_MATCH_FOUND
+                                    </div>
+                                    <p className="michroma" style={{ fontSize: '0.6rem', color: 'var(--text-mute)', letterSpacing: '2px', marginBottom: '2rem' }}>
+                                        CONSTRUCTOR: "{searchQuery}" NOT_FOUND_IN_GRID
+                                    </p>
+                                    <button
+                                        onClick={() => setSearchQuery("")}
+                                        className="mega-btn"
+                                        style={{ background: 'rgba(255,255,255,0.05)' }}
+                                    >
+                                        RESET_FILTERS
+                                    </button>
+                                </motion.div>
+                            )}
+                        </div>
+                        <div className="mega-menu-footer" style={{ marginTop: '2rem' }}>
+                            <Link href={`/dashboard?tab=paddock&subtab=teams${season ? `&season=${season}` : ""}`} className="mega-btn" onClick={onClose}>
+                                ALL_CONSTRUCTORS
+                            </Link>
                         </div>
                     </div>
-                </div>
-
-                <div className="team-mega-grid">
-                    {filteredTeams.map(t => (
-                        <Link
-                            key={t.id}
-                            href={`/teams/${t.id}${seasonParam}`}
-                            className="team-card-pro"
-                            onClick={onClose}
-                        >
-                            <div className="team-card-header">
-                                <img
-                                    src={t.logoUrl} alt={t.name}
-                                    className="team-logo-mini"
-                                    loading="lazy"
-                                    onError={e => { e.currentTarget.style.display = "none"; }}
-                                />
-                                <span className="team-name-pro">{t.name.toUpperCase()}</span>
-                            </div>
-                            <div className="car-profile-container">
-                                <img
-                                    src={t.carImageUrl} alt={`${t.name} car`}
-                                    className="car-profile-img"
-                                    loading="lazy"
-                                    onError={e => { e.currentTarget.style.display = "none"; }}
-                                />
-                            </div>
-                        </Link>
-                    ))}
-                    {filteredTeams.length === 0 && (
-                        <div style={{
-                            gridColumn: '1 / -1',
-                            padding: '4rem 2rem',
-                            textAlign: 'center',
-                            background: 'rgba(255,255,255,0.02)',
-                            borderRadius: '8px',
-                            border: '1px dashed rgba(255,255,255,0.1)'
-                        }}>
-                            <div className="michroma" style={{ fontSize: '1.2rem', color: 'var(--f1-red)', marginBottom: '1rem', opacity: 0.8 }}>
-                                [ ! ] NO_MATCH_FOUND
-                            </div>
-                            <p className="michroma" style={{ fontSize: '0.6rem', color: 'var(--text-mute)', letterSpacing: '2px', marginBottom: '2rem' }}>
-                                CONSTRUCTOR: "{searchQuery}" NOT_FOUND_IN_GRID
-                            </p>
-                            <button
-                                onClick={() => setSearchQuery("")}
-                                className="mega-btn"
-                                style={{ background: 'rgba(255,255,255,0.05)' }}
-                            >
-                                RESET_FILTERS
-                            </button>
-                        </div>
-                    )}
-                </div>
-                <div className="mega-menu-footer">
-                    <Link href={`/dashboard?tab=paddock&subtab=teams${season ? `&season=${season}` : ""}`} className="mega-btn" onClick={onClose}>
-                        ALL_CONSTRUCTORS
-                    </Link>
-                </div>
-            </div>
-        </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

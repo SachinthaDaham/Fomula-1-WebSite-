@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import Footer from "../components/Footer";
 import { DriversMegaMenu, TeamsMegaMenu } from "../components/MegaMenus";
 
@@ -1523,10 +1524,21 @@ function DashboardContent() {
                                 <div style={{ textAlign: 'center', padding: '12rem', color: 'var(--telemetry-cyan)', fontFamily: 'Michroma', fontSize: '0.6rem', letterSpacing: '6px' }}> [ QUERYING_CENTRAL_PADDOCK_INTEL ] </div>
                             ) : (
                                 <>
-                                    {activeTab === "intelligence" && <IntelligenceView stats={stats} season={season} />}
-                                    {activeTab === "editorial" && <EditorialView season={season} onOpenArticle={setSelectedArticle} />}
-                                    {activeTab === "paddock" && <PaddockView teams={teams} drivers={drivers} paddockTab={paddockTab} season={season} />}
-                                    {activeTab === "management" && user?.role === "admin" && <ManagementView season={season} />}
+                                    <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={activeTab}
+                                            initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)", y: 20 }}
+                                            animate={{ opacity: 1, scale: 1, filter: "blur(0px)", y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.98, filter: "blur(10px)", y: -20 }}
+                                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                                            style={{ width: "100%" }}
+                                        >
+                                            {activeTab === "intelligence" && <IntelligenceView stats={stats} season={season} />}
+                                            {activeTab === "editorial" && <EditorialView season={season} onOpenArticle={setSelectedArticle} />}
+                                            {activeTab === "paddock" && <PaddockView teams={teams} drivers={drivers} paddockTab={paddockTab} season={season} />}
+                                            {activeTab === "management" && user?.role === "admin" && <ManagementView season={season} />}
+                                        </motion.div>
+                                    </AnimatePresence>
                                 </>
                             )}
                         </div>
